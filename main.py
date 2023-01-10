@@ -2,6 +2,18 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+from fpdf import FPDF
+
+class PDF(FPDF):
+
+    def header(self):
+        self.image('ppu_logo.png', 10,8,30)
+        self.set_font('times', 'B', 18)
+        self.cell(0,10,'Palestine Plytechnic University', border=False, ln=True, align='C')
+        self.set_font('times', 'B', 14)
+        self.cell(0,6,'Final Student Evaluation', border=False, ln=True, align='C')
+        self.ln(20)
 
 
 class student_data:
@@ -35,6 +47,7 @@ class student_data:
         unwated_elm =  ('Email','Rubric')
         for elm in unwated_elm:
             std_marks.pop(elm)
+        
         return std_marks
 
 
@@ -96,4 +109,30 @@ class student_data:
         fig.tight_layout()
         fig.savefig('Plots/' + std_name + '_Rank.png', dpi=300, bbox_inches='tight')
 
-class as_pdf:
+    def report(self,std_name):
+        bar_chart_path = 'Plots/'+std_name+'_bar.png'
+        rank_chart_path = 'Plots/'+std_name+'_Rank.png'
+        pdf_name = std_name + '.pdf'
+        std_marks = self.get_std_marks(std_name=std_name)
+        std_miss = self.unsupmitted(std_name=std_name)
+        self.plot_std_marks(std_name=std_name)
+        self.plot_std_rank(std_name=std_name)
+
+        report = PDF('P','mm','A4')
+        report.set_auto_page_break(auto=True, margin = 15)
+        report.add_page()
+        report.set_font('times','B', 14)
+        report.cell(0,10,"Course Activity Grades _ "+ std_name ,ln=True,border=True)
+        report.cell(0,10,"* The Weight of course activities was as follows : ",ln=True,border=False)
+        report.ln(100)
+        report.image('Plots\Rubric_weight.png', 50,70, 100)
+        report.cell(0,10,"* You score the following grades in this course: ",ln=True,border=False)
+        report.cell(0,10,str(std_marks),ln=True,border=True,align='C')
+        report.image(bar_chart_path, 40,195, 120)
+        report.ln(90)
+        if std_miss:
+            report.cell(0,10,"* You did not submitt the following  : ",ln=True,border=False)
+            report.cell(0,10,str(std_miss),ln=True,border=True,align='C')
+        report.cell(0,10,"* Your rank in the whole class was as the following : ",ln=True,border=False)
+        report.image(rank_chart_path, 40,80, 120)
+        report.output(pdf_name)
