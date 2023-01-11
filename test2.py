@@ -1,7 +1,9 @@
 from main import student_data
 from fpdf import FPDF
 from math import isnan
-
+import smtplib
+import ssl
+ 
 std_r = student_data('Marks\Class1_Marks.xlsx')
 
 std_names = std_r.get_names()
@@ -16,3 +18,6 @@ std_r.plot_std_rank(student_Name)
 
 
 std_r.report('Student 5')
+
+std_emails = list(std_r.get_std_emails())[1:]
+print(std_emails)

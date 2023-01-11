@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from fpdf import FPDF
 
+
 class PDF(FPDF):
 
     def header(self):
@@ -23,7 +24,8 @@ class student_data:
         
 
         self.marks_df = pd.read_excel(marks_df_path)
-        self.std_names = self.marks_df['Name'] 
+        self.std_names = self.marks_df['Name']
+        self.std_emails = self.marks_df['Email'] 
         self.rubrics = dict(self.marks_df.iloc[0])
         unwated_elm =  ('Email', 'Name','Rubric', 'Total Grade')
         for elm in unwated_elm:
@@ -39,6 +41,9 @@ class student_data:
     def get_rubrics(self):
         return self.rubrics
 
+
+    def get_std_emails(self):
+        return self.std_emails.drop(0)
 
     def get_std_marks(self,std_name):
         m_df = self.marks_df
