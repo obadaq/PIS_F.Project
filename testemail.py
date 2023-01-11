@@ -1,5 +1,3 @@
-
-
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -9,6 +7,7 @@ from main import student_data
 
 std_r = student_data('Marks\Class1_Marks.xlsx')
 std_emails = list(std_r.get_std_emails())
+
 
 # Setup port number and server name
 

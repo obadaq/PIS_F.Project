@@ -1,10 +1,9 @@
-from main import student_data
-from fpdf import FPDF
-from math import isnan
+from main import course_exel_analysis
+
 import smtplib
 import ssl
  
-std_r = student_data('Marks\Class1_Marks.xlsx')
+std_r = course_exel_analysis('Marks\Class1_Marks.xlsx')
 
 std_names = std_r.get_names()
 rubrics = std_r.get_rubrics()
