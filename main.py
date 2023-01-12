@@ -1,30 +1,39 @@
-# final project : generating student report from total grades excel sheet
+"""
+#######################################################################################################
+* Final project : generating student report from total grades Excel sheet
 
-import pandas as pd
-import matplotlib.pyplot as plt
-from fpdf import FPDF
-import smtplib
+*The Project aims to design a class to handle student marks Excel sheets in addition to generate reports
+and mailing them the results
+######################################################################################################
+"""
+
+import pandas as pd                                # Handling Excel sheets as data frames
+import matplotlib.pyplot as plt                    # Visualizing Student Data
+from fpdf import FPDF                              # Building a PDF Report
+import smtplib                                     # Mailing the results
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 
 
+# inheriting the fpdf class to change headers configuration
 class PDF(FPDF):
 
     def header(self):
-        self.image('ppu_logo.png', 10,8,30)
+        self.image('ppu_logo.png', 10, 8, 30)
         self.set_font('times', 'B', 18)
-        self.cell(0,10,'Palestine Plytechnic University', border=False, ln=True, align='C')
+        self.cell(0, 10, 'Palestine Polytechnic University', border=False, ln=True, align='C')
         self.set_font('times', 'B', 14)
-        self.cell(0,6,'Final Student Evaluation', border=False, ln=True, align='C')
+        self.cell(0, 6, 'Final Student Evaluation', border=False, ln=True, align='C')
         self.ln(20)
 
 
-class course_exel_analysis:
+# newly defined class to achieve project goals
+class CourseExcelAnalysis:
 
-    
-    def __init__(self,marks_df_path):
+    # class constractor
+    def __init__(self, marks_df_path):
         
         self.teachers_mail = 'eng.obadaq@gmail.com'
         self.email_pswd = ''
@@ -32,30 +41,31 @@ class course_exel_analysis:
         self.std_names = self.marks_df['Name']
         self.std_emails = self.marks_df['Email'] 
         self.rubrics = dict(self.marks_df.iloc[0])
-        unwated_elm =  ('Email', 'Name','Rubric', 'Total Grade')
-        for elm in unwated_elm:
+        unwanted_elm = ('Email', 'Name', 'Rubric', 'Total Grade')
+        for elm in unwanted_elm:
             self.rubrics.pop(elm)
-        plt.pie(self.rubrics.values(), radius=1,labels=self.rubrics.keys(), autopct="%1.2f%%", wedgeprops=dict(width=1, edgecolor='white'))
+        plt.pie(self.rubrics.values(), radius=1, labels=self.rubrics.keys(), autopct="%1.2f%%",
+                wedgeprops=dict(width=1, edgecolor='white'))
         plt.title("Weight of Course Activities")
         plt.savefig('Plots/Rubric_weight.png', dpi=300, bbox_inches='tight')
-        self.rubrics.update({'Total Grade':100})
+        self.rubrics.update({'Total Grade': 100})
+
+    # class getters for names, rubrics, student emails, student marks, email password
     def get_names(self):
         return self.std_names.drop(0)
-
 
     def get_rubrics(self):
         return self.rubrics
 
-
     def get_std_emails(self):
         return self.std_emails.drop(0)
 
-    def get_std_marks(self,std_name):
+    def get_std_marks(self, std_name):
         m_df = self.marks_df
         m_df = m_df.set_index('Name')
         std_marks = dict(m_df.loc[std_name])
-        unwated_elm =  ('Email','Rubric')
-        for elm in unwated_elm:
+        unwanted_elm = ('Email', 'Rubric')
+        for elm in unwanted_elm:
             std_marks.pop(elm)
         
         return std_marks
@@ -63,52 +73,55 @@ class course_exel_analysis:
     def get_pswd(self):
         return self.email_pswd
 
-    def set_teachers_mail(self,new_mail):
+    # class setters to set teachers email, email password
+    def set_teachers_mail(self, new_mail):
         self.teachers_mail = new_mail
 
-    def set_pswd(self,new_pswd):
+    def set_pswd(self, new_pswd):
         self.email_pswd = new_pswd
 
-    def unsupmitted(self,std_name):
+    # class method to find if the student did not submit any evaluation rubrics
+    def unsupmitted(self, std_name):
         m_df = self.marks_df
         m_df = m_df.set_index('Name')
         rubric = dict(m_df.loc[std_name].isnull())
-        unwated_elm =  ('Email','Rubric', 'Total Grade')
-        for elm in unwated_elm:
+        unwanted_elm = ('Email', 'Rubric', 'Total Grade')
+        for elm in unwanted_elm:
             rubric.pop(elm)
         nulls = []
         for item in rubric:
             if rubric.get(item):
                 nulls.append(item)
         return nulls
-        
-    def plot_std_marks(self,std_name):
+
+    # class method to plot a single student bar graph of his/her marks
+    def plot_std_marks(self, std_name):
         
         std_marks = self.get_std_marks(std_name=std_name)
         
         fig, ax = plt.subplots()
         
-        ax.bar(range(len(self.rubrics.keys())),list(self.rubrics.values()),label= 'Activities Weight',width=0.3)
-        ax.bar(range(len(std_marks.keys())),list(std_marks.values()),label= std_name + ' Marks',width=0.25)
+        ax.bar(range(len(self.rubrics.keys())), list(self.rubrics.values()), label='Activities Weight', width=0.3)
+        ax.bar(range(len(std_marks.keys())), list(std_marks.values()), label=std_name + ' Marks', width=0.25)
 
         ax.set_ylabel('Grades')
-        ax.set_title(std_name+ ' Activities Marks')
+        ax.set_title(std_name + ' Activities Marks')
         ax.set_xticks(range(len(self.rubrics.keys())))
-        ax.set_xticklabels(list(self.rubrics.keys()),rotation='vertical')
+        ax.set_xticklabels(list(self.rubrics.keys()), rotation='vertical')
         ax.legend()
         fig.tight_layout()
         fig.savefig('Plots/' + std_name + '_bar.png', dpi=300, bbox_inches='tight')
 
-        
-    def plot_std_rank(self,std_name):
-        whole_class_marks = self.marks_df[['Name','Total Grade']].sort_values(by='Total Grade').drop(0)
+    # class method to plot a single student bar graph showing his/her rank
+    def plot_std_rank(self, std_name):
+        whole_class_marks = self.marks_df[['Name', 'Total Grade']].sort_values(by='Total Grade').drop(0)
         std_mark = self.get_std_marks(std_name=std_name)['Total Grade']
         std_rank = list(whole_class_marks['Total Grade']).index(std_mark)
 
         std_mark_list = []
         std_name_list = []
         for i in range(len(list(whole_class_marks['Total Grade']))):
-            if i == std_rank :
+            if i == std_rank:
                 std_mark_list.append(std_mark)
                 std_name_list.append('You') 
             else: 
@@ -117,17 +130,18 @@ class course_exel_analysis:
     
         fig, ax = plt.subplots()
 
-        ax.bar(whole_class_marks['Name'],whole_class_marks['Total Grade'],width=0.3)
-        ax.bar(whole_class_marks['Name'],std_mark_list,width=0.3)
+        ax.bar(whole_class_marks['Name'], whole_class_marks['Total Grade'], width=0.3)
+        ax.bar(whole_class_marks['Name'], std_mark_list, width=0.3)
 
         ax.set_ylabel('Grades')
         ax.set_title('Whole Class')
         ax.set_xticks(whole_class_marks['Name'])
-        ax.set_xticklabels(std_name_list,rotation='vertical')
+        ax.set_xticklabels(std_name_list, rotation='vertical')
         fig.tight_layout()
         fig.savefig('Plots/' + std_name + '_Rank.png', dpi=300, bbox_inches='tight')
 
-    def report(self,std_name):
+    # class method to report a single student evaluation report as pdf
+    def report(self, std_name):
         bar_chart_path = 'Plots/'+std_name+'_bar.png'
         rank_chart_path = 'Plots/'+std_name+'_Rank.png'
         pdf_name = std_name + '.pdf'
@@ -136,36 +150,37 @@ class course_exel_analysis:
         self.plot_std_marks(std_name=std_name)
         self.plot_std_rank(std_name=std_name)
 
-        report = PDF('P','mm','A4')
-        report.set_auto_page_break(auto=True, margin = 15)
+        report = PDF('P', 'mm', 'A4')
+        report.set_auto_page_break(auto=True, margin=15)
         report.add_page()
-        report.set_font('times','B', 14)
-        report.cell(0,10,"Course Activity Grades _ "+ std_name ,ln=True,border=True)
-        report.cell(0,10,"* The Weight of course activities was as follows : ",ln=True,border=False)
+        report.set_font('times', 'B', 14)
+        report.cell(0, 10, "Course Activity Grades _ " + std_name, ln=True, border=True)
+        report.cell(0, 10, "* The Weight of course activities was as follows : ", ln=True, border=False)
         report.ln(100)
-        report.image('Plots\Rubric_weight.png', 50,70, 100)
-        report.cell(0,10,"* You score the following grades in this course: ",ln=True,border=False)
-        report.cell(0,10,str(std_marks),ln=True,border=True,align='C')
-        report.image(bar_chart_path, 40,195, 120)
+        report.image('Plots\\Rubric_weight.png', 50, 70, 100)
+        report.cell(0, 10, "* You score the following grades in this course: ", ln=True, border=False)
+        report.cell(0, 10, str(std_marks), ln=True, border=True, align='C')
+        report.image(bar_chart_path, 40, 195, 120)
         report.ln(90)
+
         if std_miss:
-            report.cell(0,10,"* You did not submitt the following  : ",ln=True,border=False)
-            report.cell(0,10,str(std_miss),ln=True,border=True,align='C')
-        report.cell(0,10,"* Your rank in the whole class was as the following : ",ln=True,border=False)
-        report.image(rank_chart_path, 40,80, 120)
+            report.cell(0, 10, "* You did not submit the following  : ", ln=True, border=False)
+            report.cell(0, 10, str(std_miss), ln=True, border=True, align='C')
+        report.cell(0, 10, "* Your rank in the whole class was as the following : ", ln=True, border=False)
+        report.image(rank_chart_path, 40, 80, 120)
         report.output(pdf_name)
 
+    # class method to report all students evaluation reports and send them via Email
     def mail_students(self):
         
         smtp_port = 587                 
-        smtp_server = "smtp.gmail.com"  
-
+        smtp_server = "smtp.gmail.com"
 
         sender = self.teachers_mail
-        recivers_emails = list(self.get_std_emails())
-        recivers_names = self.get_names()
+        receivers_emails = list(self.get_std_emails())
+        receivers_names = self.get_names()
 
-        for student in recivers_names:
+        for student in receivers_names:
             self.report(std_name=student)
 
         self.set_pswd(input(f'Please Enter {sender} Password >>::  '))
@@ -174,10 +189,10 @@ class course_exel_analysis:
         email_subject = "Course Evaluation Report"
 
         i = 0
-        for person in recivers_emails:
+        for person in receivers_emails:
 
             body = f"""
-            Dear {recivers_names[i]}
+            Dear {receivers_names[i]}
         
             Please find your evaluation report in the attachments , for any question you can
             ask me by email or vist me in the office hours.
@@ -185,7 +200,7 @@ class course_exel_analysis:
             Regards
         
             Eng.Obada Qawasmi
-            Industial Automation labs supervisor
+            Industrial Automation labs supervisor
             Palestine Polytechnic University
 
             """
@@ -200,10 +215,10 @@ class course_exel_analysis:
             msg.attach(MIMEText(body, 'plain'))
 
             # Define the file to attach
-            filename = f"{recivers_names}.pdf"
+            filename = f"{receivers_names}.pdf"
 
             # Open the file in python as a binary
-            attachment= open(filename, 'rb')  # r for read and b for binary
+            attachment = open(filename, 'rb')  # r for read and b for binary
 
             # Encode as base 64
             attachment_package = MIMEBase('application', 'octet-stream')
@@ -220,9 +235,8 @@ class course_exel_analysis:
             TIE_server = smtplib.SMTP(smtp_server, smtp_port)
             TIE_server.starttls()
             TIE_server.login(sender, pswd)
-            print("Succesfully connected to server")
+            print("Successfully connected to server")
             print()
-
 
             # Send emails to "person" as list is iterated
             print(f"Sending email to: {person}...")
