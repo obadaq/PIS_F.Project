@@ -3,9 +3,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
-from main import student_data
+from main import CourseExcelAnalysis
 
-std_r = student_data('Marks\Class1_Marks.xlsx')
+std_r = CourseExcelAnalysis('Marks\Class1_Marks.xlsx')
 std_emails = list(std_r.get_std_emails())
 
 
@@ -20,7 +20,7 @@ std_names = list(std_r.get_names())
 email_list = std_emails
 
 # Define the password (better to reference externally)
-pswd = "lpqvazcmpjllcpwu" # As shown in the video this password is now dead, left in as example only
+pswd = "hbikozflxtmkqkrj" # As shown in the video this password is now dead, left in as example only
 
 
 # name the email subject

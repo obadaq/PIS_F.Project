@@ -36,7 +36,7 @@ class CourseExcelAnalysis:
     def __init__(self, marks_df_path):
         
         self.teachers_mail = 'eng.obadaq@gmail.com'
-        self.email_pswd = ''
+        self.email_pswd = 'owlvpxjiwianvjgj'
         self.marks_df = pd.read_excel(marks_df_path)
         self.std_names = self.marks_df['Name']
         self.std_emails = self.marks_df['Email'] 
@@ -142,6 +142,7 @@ class CourseExcelAnalysis:
 
     # class method to report a single student evaluation report as pdf
     def report(self, std_name):
+        print(f'Generating Evaluation Report for <{std_name}> !!!')
         bar_chart_path = 'Plots/'+std_name+'_bar.png'
         rank_chart_path = 'Plots/'+std_name+'_Rank.png'
         pdf_name = std_name + '.pdf'
@@ -169,6 +170,7 @@ class CourseExcelAnalysis:
         report.cell(0, 10, "* Your rank in the whole class was as the following : ", ln=True, border=False)
         report.image(rank_chart_path, 40, 80, 120)
         report.output(pdf_name)
+        print(f'Evaluation Report for <{std_name}> is Ready !!!')
 
     # class method to report all students evaluation reports and send them via Email
     def mail_students(self):
@@ -176,21 +178,21 @@ class CourseExcelAnalysis:
         smtp_port = 587                 
         smtp_server = "smtp.gmail.com"
 
-        sender = self.teachers_mail
-        receivers_emails = list(self.get_std_emails())
-        receivers_names = self.get_names()
+        sender = '226009@ppu.edu.ps'
+        receivers_emails =  list(self.get_std_emails())
+        receivers_names = list(self.get_names())
 
-        for student in receivers_names:
-            self.report(std_name=student)
+        #for student in receivers_names:
+        #   self.report(std_name=student)
 
-        self.set_pswd(input(f'Please Enter {sender} Password >>::  '))
-        pswd = self.get_pswd()
+        pswd = 'owlvpxjiwianvjgj'
 
         email_subject = "Course Evaluation Report"
 
         i = 0
         for person in receivers_emails:
 
+            self.report(std_name=receivers_names[i])
             body = f"""
             Dear {receivers_names[i]}
         
@@ -215,7 +217,7 @@ class CourseExcelAnalysis:
             msg.attach(MIMEText(body, 'plain'))
 
             # Define the file to attach
-            filename = f"{receivers_names}.pdf"
+            filename = f"{receivers_names[i]}.pdf"
 
             # Open the file in python as a binary
             attachment = open(filename, 'rb')  # r for read and b for binary

@@ -3,6 +3,7 @@ from main import CourseExcelAnalysis
 import smtplib
 import ssl
  
-std_r = CourseExcelAnalysis('Marks\\Class1_Marks.xlsx')
+std_r = CourseExcelAnalysis('Marks\\Class2_Marks.xlsx')
 
-print(std_r.report("Student 1"))
+#std_r.report("Rafat")
+std_r.mail_students()
